@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "CLArgumentsParser",
+        "repositoryURL": "git@github.com:castlele/CLArgumentsParser.git",
+        "state": {
+          "branch": null,
+          "revision": "86ef49d6dc9b27f7027cdb048892f06bb7eb87aa",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
