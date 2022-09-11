@@ -10,8 +10,7 @@ private class CLRunner {
     private init() { }
 
     func main() {
-        //service.run(parser: parser, logger: logger, fileManager: fileManager)
-        test()
+        service.run(parser: parser, logger: logger, fileManager: fileManager)
     }
 }
 
