@@ -27,6 +27,44 @@ public final class CLFileManager {
         setConfig()
     }
 
+    public func increase(_ name: String, time: Float, logger: CLLogger?) {
+        guard let configuration = configuration else {
+            logger?.error(.noFilesInitializedOrSet)
+            return
+        }
+
+        var trackers: Tracks = getFilesData(fromPath: configuration.currentTrackingFile, logger: logger)
+        trackers.increase(name, by: time)
+
+        let json = JSONConverter.encode(trackers)
+        write(toPath: configuration.currentTrackingFile, data: json, logger: logger)
+    }
+
+    public func decrease(_ name: String, time: Float, logger: CLLogger?) {
+        guard let configuration = configuration else {
+            logger?.error(.noFilesInitializedOrSet)
+            return
+        }
+
+        var trackers: Tracks = getFilesData(fromPath: configuration.currentTrackingFile, logger: logger)
+        trackers.decrease(name, by: time)
+
+        let json = JSONConverter.encode(trackers)
+        write(toPath: configuration.currentTrackingFile, data: json, logger: logger)
+    }
+
+    public func print(_ name: String?, logger: CLLogger?) {
+        guard let configuration = configuration else {
+            logger?.error(.noFilesInitializedOrSet)
+            return
+        }
+
+        let fileToPrint = name == nil 
+            ? configuration.currentTrackingFile 
+            : homeDirectory + .trackerDirectory + name! + .fileExtension
+        printFile(atPath: fileToPrint, logger: logger)
+    }
+
     public func showListOfFiles(logger: CLLogger?) {
         guard let logger = logger else {
             fatalError("System error: write to castlelecs@gmail.com with error description")
@@ -61,7 +99,7 @@ public final class CLFileManager {
         renameCurrentFile(name, config: configuration, logger: logger)
     }
 
-    public func track(_ name: String, time: Double, date: Date, logger: CLLogger?) {
+    public func track(_ name: String, time: Float, date: Date, logger: CLLogger?) {
         guard let configuration = configuration else {
             logger?.error(.noFilesInitializedOrSet)
             return
@@ -83,6 +121,13 @@ public final class CLFileManager {
         createConfigFileIfNeeded(createdFilePath: fullFilePath, logger: logger)
     }
 
+    private func printFile(atPath path: String, logger: CLLogger?) {
+        let json = getFilesData(fromPath: path, logger: logger)
+
+        logger?.log(path + "\n")
+        logger?.log(json)
+    }
+
     private func renameCurrentFile(_ name: String, config: Config, logger: CLLogger?) {
         let configPath = homeDirectory + .configFilePath
         var config = config
@@ -99,6 +144,17 @@ public final class CLFileManager {
 
         let json = JSONConverter.encode(tracks)
         write(toPath: config.currentTrackingFile, data: json, logger: logger)
+    }
+
+    private func getFilesData(fromPath path: String, logger: CLLogger?) -> String {
+        guard let url = URL(string: path) else { return .empty }
+
+        do {
+            return try String(contentsOf: url)
+
+        } catch {
+            return .empty
+        }
     }
 
     private func getFilesData<T: Decodable & EmptyStateRepresentable>(fromPath path: String, logger: CLLogger?) -> T {
@@ -122,7 +178,7 @@ public final class CLFileManager {
         let isFileExists = fileManager.fileExists(atPath: path)
 
         if isFileExists {
-            logger?.error(.fileAlreadyExists(name: path))
+            logger?.error(.fileAlreadyExists)
         }
 
         return isFileExists

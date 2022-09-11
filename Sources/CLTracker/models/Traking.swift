@@ -13,8 +13,22 @@ public struct Tracks: Codable, EmptyStateRepresentable {
         }
     }
 
+    public mutating func decrease(_ name: String, by time: Float) {
+        guard let trackIndex = get(byName: name) else { return }
+        tracks[trackIndex].time -= time
+    }
+
+    public mutating func increase(_ name: String, by time: Float) {
+        guard let trackIndex = get(byName: name) else { return }
+        tracks[trackIndex].time += time
+    }
+
     private func getIndex(ofTrack track: Track) -> Int? {
         tracks.firstIndex { $0 == track }
+    }
+
+    private func get(byName name: String) -> Int? {
+        tracks.firstIndex { $0.taskName == name }
     }
 }
 
@@ -28,7 +42,7 @@ public struct Track: Codable, Equatable {
 
     public var date: Date
     public var taskName: String
-    public var time: Double
+    public var time: Float
 
 
     public static func == (lhs: Track, rhs: Track) -> Bool {

@@ -1,86 +1,114 @@
+import CLArgumentsParser
 import Foundation
 
-public final class CLService {
+public struct CLService {
 
-    private var logger: CLLogger?
-    private var fileManager: CLFileManager?
+    private let logger = CLLogger()
 
-    public func run(parser: CLParser, logger: CLLogger, fileManager: CLFileManager) {
-        self.logger = logger
-        self.fileManager = fileManager
+    private let fileManager = CLFileManager.shared
+    private let register = CLRegister()
+    private let parser: CLParser
 
-        let action = parser.parse()
+    public init() {
+        register.configure(with: CLCommand.availableCommands)
+        parser = CLParser(register: register)
+    }
 
-        switch action {
-        case let .error(error):
-            handleError(error)
+    public func run() {
+        do {
+            let commands = try parser.parse(CommandLine.arguments)
 
-        case .help:
-            handleHelp()
+            commands.forEach { command in
+                guard let type = command.type as? CLCommandType else { return }
 
-        case let .initialize(name):
-            handleInitialization(withName: name)
+                switch type {
+                case .tracker:
+                    if command.options.contains(CLOptionType.help) {
+                        handleHelp()
+                        return
+                    }
 
-        case let .set(name):
-            handleSetting(withName: name)
+                case .initialize:
+                    handleInitialization(withName: command.arguments[0])
 
-        case .list:
-            handleListing()
+                case .set:
+                    handleSetting(withName: command.arguments[0])
+                    
+                case .list:
+                    handleListing()
 
-        case let .track(name, time):
-            handleTracking(withName: name, time: time)
+                case .track:
+                    handleTracking(withName: command.arguments[0], time: command.arguments[1])
 
-        case let .remove(name):
-            handleRemoving(withName: name)
+                case .remove:
+                    return
 
-        case let .increase(name, time):
-            handleIncreasing(withName: name, time: time)
+                case .increase:
+                    handleIncreasing(withName: command.arguments[0], time: command.arguments[1])
 
-        case let .decrease(name, time):
-            handleDecreasing(withName: name, time: time)
+                case .decrease:
+                    handleDecreasing(withName: command.arguments[0], time: command.arguments[1])
 
-        case let .print(name):
-            handlePrinting(withName: name)
+                case .print:
+                    handlePrinting(withName: command.arguments[safe: 0])
+                }
+            }
+
+        } catch let CLParserError.invalidArgument(argument) {
+            logger.error("invalid argument \(argument)")
+
+        } catch let CLParserError.invalidUsage(command) {
+            logger.error("invalid usage of \(command)")
+
+        } catch let CLParserError.optionUseOfOption(option, command) { // TODO: fix naming
+            logger.error("invalid usage of \(option) for \(command)")
+
+        } catch {
+            logger.error(error.localizedDescription)
         }
+
     }
 
     private func handleError(_ error: CLError) {
-        logger?.error(error)
+        logger.error(error)
     }
 
     private func handleHelp() {
-        logger?.showHelp()
+        logger.showHelp()
     }
 
     private func handleInitialization(withName name: String) {
-        fileManager?.create(name, logger: logger)
+        fileManager.create(name, logger: logger)
     }
  
     private func handleSetting(withName name: String) {
-        fileManager?.setCurrentFile(withName: name, logger: logger)
+        fileManager.setCurrentFile(withName: name, logger: logger)
     }
 
     private func handleListing() {
-        fileManager?.showListOfFiles(logger: logger)
+        fileManager.showListOfFiles(logger: logger)
     }
 
     private func handleTracking(withName name: String, time: String) {
-        fileManager?.track(name, time: makeTime(time), date: Date(), logger: logger)
+        fileManager.track(name, time: makeTime(time), date: Date(), logger: logger)
     }
 
     private func handleRemoving(withName name: String) {
     }
 
     private func handleIncreasing(withName name: String, time: String) {
+        fileManager.increase(name, time: makeTime(time), logger: logger)
     }
 
     private func handleDecreasing(withName name: String, time: String) {
+        fileManager.decrease(name, time: makeTime(time), logger: logger)
     }
 
     private func handlePrinting(withName name: String?) {
+        fileManager.print(name, logger: logger)
     }
 
-    private func makeTime(_ stringTime: String) -> Double {
-        Double(stringTime) ?? 0
+    private func makeTime(_ stringTime: String) -> Float {
+        Float(stringTime) ?? 0
     }
 }
