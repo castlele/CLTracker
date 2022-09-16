@@ -1,6 +1,8 @@
 import CLArgumentsParser
 import Foundation
 
+// TODO: - Refactor
+@available(*, deprecated, message: "needs refactoring")
 public struct CLService {
 
     private let logger = CLLogger()
@@ -23,7 +25,7 @@ public struct CLService {
 
                 switch type {
                 case .tracker:
-                    if command.options.contains(CLOptionType.help) {
+                    if command.options.contains(.help) {
                         handleHelp()
                         return
                     }
@@ -50,7 +52,9 @@ public struct CLService {
                     handleDecreasing(withName: command.arguments[0], time: command.arguments[1])
 
                 case .print:
-                    handlePrinting(withName: command.arguments[safe: 0])
+                    command.options.contains(.stats)
+                    ? handlePrintingStats(withName: command.arguments[safe: 0])
+                    : handlePrinting(withName: command.arguments[safe: 0])
                 }
             }
 
@@ -102,6 +106,10 @@ public struct CLService {
 
     private func handleDecreasing(withName name: String, time: String) {
         fileManager.decrease(name, time: makeTime(time), logger: logger)
+    }
+
+    private func handlePrintingStats(withName name: String?) {
+        fileManager.printStats(name, logger: logger)
     }
 
     private func handlePrinting(withName name: String?) {

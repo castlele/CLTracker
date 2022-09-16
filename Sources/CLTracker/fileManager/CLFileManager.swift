@@ -11,6 +11,8 @@ private extension String {
 
 // MARK: - CLFileManager
 
+// TODO: - Refactor
+@available(*, deprecated, message: "needs refactoring")
 public final class CLFileManager {
 
     public static let shared = CLFileManager()
@@ -51,6 +53,18 @@ public final class CLFileManager {
 
         let json = JSONConverter.encode(trackers)
         write(toPath: configuration.currentTrackingFile, data: json, logger: logger)
+    }
+
+    public func printStats(_ name: String?, logger: CLLogger?) {
+        guard let configuration = configuration else {
+            logger?.error(.noFilesInitializedOrSet)
+            return
+        }
+
+        let fileToPrint = name == nil 
+            ? configuration.currentTrackingFile 
+            : homeDirectory + .trackerDirectory + name! + .fileExtension
+        printStats(atPath: fileToPrint, logger: logger)
     }
 
     public func print(_ name: String?, logger: CLLogger?) {
@@ -119,6 +133,14 @@ public final class CLFileManager {
 
         createFile(atPath: fullFilePath, logger: logger)
         createConfigFileIfNeeded(createdFilePath: fullFilePath, logger: logger)
+    }
+
+    private func printStats(atPath path: String, logger: CLLogger?) {
+        let tracks: Tracks = getFilesData(fromPath: path, logger: logger)
+        let json = tracks.getStats().description
+
+        logger?.log(path + "\n")
+        logger?.log(json)
     }
 
     private func printFile(atPath path: String, logger: CLLogger?) {

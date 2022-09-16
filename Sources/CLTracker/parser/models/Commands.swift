@@ -106,7 +106,7 @@ public enum CLCommandType: CommandType, CaseIterable, StringRepresentable {
             return [:]
 
         case .print:
-            return [:]
+            return [CLOptionType.stats.stringValue: .stats]
         }
     }
 }
