@@ -1,8 +1,8 @@
 import CLArgumentsParser
 
-public typealias CLCommand = BaseCLCommand<CLOptionType>
+public typealias CLCommand = BaseCLCommand<CLOption, CLCommandType>
 
-public enum CLCommandType: CommandType, CaseIterable, StringRepresentable {
+public enum CLCommandType: CaseIterable, StringRepresentable {
     case tracker
     case initialize
     case set
@@ -79,7 +79,7 @@ public enum CLCommandType: CommandType, CaseIterable, StringRepresentable {
         }
     }
 
-    public var options: [String: CLOptionType] {
+    public var options: [String: CLOption] {
         switch self {
         case .tracker:
             return [CLOptionType.help.stringValue: .help]
@@ -94,7 +94,7 @@ public enum CLCommandType: CommandType, CaseIterable, StringRepresentable {
             return [:]
 
         case .track:
-            return [:]
+            return [CLOptionType.tag.stringValue: .tag]
 
         case .remove:
             return [:]

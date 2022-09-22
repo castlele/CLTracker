@@ -21,9 +21,7 @@ public struct CLService {
             let commands = try parser.parse(CommandLine.arguments)
 
             commands.forEach { command in
-                guard let type = command.type as? CLCommandType else { return }
-
-                switch type {
+                switch command.type {
                 case .tracker:
                     if command.options.contains(.help) {
                         handleHelp()
@@ -40,7 +38,8 @@ public struct CLService {
                     handleListing()
 
                 case .track:
-                    handleTracking(withName: command.arguments[0], time: command.arguments[1])
+                    let argument = command.options.first(where: { $0.type == .tag })?.arguments.first
+                    handleTracking(withName: command.arguments[0], time: command.arguments[1], tag: argument)
 
                 case .remove:
                     return
@@ -53,8 +52,8 @@ public struct CLService {
 
                 case .print:
                     command.options.contains(.stats)
-                    ? handlePrintingStats(withName: command.arguments[safe: 0])
-                    : handlePrinting(withName: command.arguments[safe: 0])
+                        ? handlePrintingStats(withName: command.arguments[safe: 0])
+                        : handlePrinting(withName: command.arguments[safe: 0])
                 }
             }
 
@@ -64,13 +63,13 @@ public struct CLService {
         } catch let CLParserError.invalidUsage(command) {
             logger.error("invalid usage of \(command)")
 
-        } catch let CLParserError.optionUseOfOption(option, command) { // TODO: fix naming
+
+        } catch let CLParserError.invalidUseOfOption(option, command) { // TODO: fix naming
             logger.error("invalid usage of \(option) for \(command)")
 
         } catch {
             logger.error(error.localizedDescription)
         }
-
     }
 
     private func handleError(_ error: CLError) {
@@ -93,8 +92,8 @@ public struct CLService {
         fileManager.showListOfFiles(logger: logger)
     }
 
-    private func handleTracking(withName name: String, time: String) {
-        fileManager.track(name, time: makeTime(time), date: Date(), logger: logger)
+    private func handleTracking(withName name: String, time: String, tag: String?) {
+        fileManager.track(name, time: makeTime(time), date: Date(), tag: tag, logger: logger)
     }
 
     private func handleRemoving(withName name: String) {

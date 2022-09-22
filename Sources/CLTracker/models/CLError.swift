@@ -1,11 +1,13 @@
-public indirect enum CLError: StringRepresentable {
+public enum CLError: StringRepresentable {
     case unknown
     case noArguments
     case notEnoughArguments
     case invalidArgumentName
     case fileAlreadyExists
     case noFilesInitializedOrSet
+    case invalidTag(tag: String)
 
+    @available(*, deprecated, message: "Refactor is needed")
     public var stringValue: String {
         switch self {
         case .unknown:
@@ -25,6 +27,9 @@ public indirect enum CLError: StringRepresentable {
 
         case .noFilesInitializedOrSet:
             return "No files were initialized or set"
+
+        case let .invalidTag(tag):
+            return "Invalid tag used: {\(tag)}\nHere is all available tags: \(Tag.allCases.map { $0.rawValue })"
         }
     }
 }

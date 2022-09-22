@@ -113,13 +113,19 @@ public final class CLFileManager {
         renameCurrentFile(name, config: configuration, logger: logger)
     }
 
-    public func track(_ name: String, time: Float, date: Date, logger: CLLogger?) {
+    public func track(_ name: String, time: Float, date: Date, tag: String?, logger: CLLogger?) {
         guard let configuration = configuration else {
             logger?.error(.noFilesInitializedOrSet)
             return
         }
 
-        let newTrack = Track(date: date, taskName: name, time: time)
+        let tagObject = Tag(rawValue: tag ?? .empty)
+        let newTrack = Track(date: date, taskName: name, time: time, tag: tagObject)
+
+        if tagObject == nil, let tag = tag, !tag.isEmpty {
+            logger?.error(.invalidTag(tag: tag))
+        }
+
         addNewTrack(newTrack, config: configuration, logger: logger)
     }
 

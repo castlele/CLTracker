@@ -3,24 +3,26 @@ import Foundation
 // MARK: - Tracks
 
 public struct Tracks: Codable, EmptyStateRepresentable {
+
     public static let empty = Tracks(tracks: [])
 
     public var tracks: [Track]
 
-    public func getStats() -> Tracks {
-        var stats = [String: Track]()
+    public func getStats() -> Stats {
+        var stats = [String: Stat]()
 
         tracks.forEach { track in
-            if let _ = stats[track.taskName] {
-                stats[track.taskName]?.time += track.time
-                stats[track.taskName]?.date = track.date
+             let tagName = track.tag?.rawValue ?? "other"
+
+            if let _ = stats[tagName] {
+                stats[tagName]?.time += track.time
 
             } else {
-                stats[track.taskName] = track
+                stats[tagName] = Stat(tag: tagName, time: track.time)
             }
         }
 
-        return Tracks(tracks: stats.values.map { $0 })
+        return Stats(stats: stats.values.map { $0 })
     }
 
     public mutating func track(_ track: Track) {
@@ -50,20 +52,6 @@ public struct Tracks: Codable, EmptyStateRepresentable {
     }
 }
 
-// MARK: - Tracks + CustomStringConvertible
-
-extension Tracks: CustomStringConvertible {
-    public var description: String {
-        guard let jsonData = JSONConverter.encode(self) else {
-            return .empty
-        }
-        
-        let json = String(data: jsonData, encoding: .utf8)
-
-        return json ?? .empty
-    }
-}
-
 // MARK: - Track
 
 public struct Track: Codable, Equatable {
@@ -72,13 +60,25 @@ public struct Track: Codable, Equatable {
         case date
         case taskName = "task_name"
         case time
+        case tag
     }
 
     public var date: Date
     public var taskName: String
     public var time: Float
+    public var tag: Tag?
 
     public static func == (lhs: Track, rhs: Track) -> Bool {
         lhs.taskName == rhs.taskName && lhs.date.isEqualTo(rhs.date)
     }
+}
+
+public enum Tag: String, CaseIterable, Codable {
+    case work
+    case project
+    case social
+    case game
+    case education
+    case freeTime = "free_time"
+    case lifeTime = "life_time"
 }

@@ -11,7 +11,7 @@ let package = Package(
         .executable(name: "tracker", targets: ["CLTracker"])
     ],
     dependencies: [
-        .package(url: "git@github.com:castlele/CLArgumentsParser.git", .revision("d1cef29cdda2a150ae4df0ca6a8883dd8ce1ee32")),
+        .package(url: "git@github.com:castlele/CLArgumentsParser.git", .revision("f1eae48205dcd20a3650ef841ab0e20937a05fb4")),
     ],
     targets: [
         .executableTarget(
