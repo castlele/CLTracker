@@ -94,7 +94,8 @@ public enum CLCommandType: CaseIterable, StringRepresentable {
             return [:]
 
         case .track:
-            return [CLOptionType.tag.stringValue: .tag]
+            return [CLOptionType.tag.stringValue: .tag,
+                    CLOptionType.override.stringValue: .override]
 
         case .remove:
             return [:]

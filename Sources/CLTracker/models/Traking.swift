@@ -25,8 +25,8 @@ public struct Tracks: Codable, EmptyStateRepresentable {
         return Stats(stats: stats.values.map { $0 })
     }
 
-    public mutating func track(_ track: Track) {
-        if let index = getIndex(ofTrack: track) {
+    public mutating func track(_ track: Track, isOverride: Bool = false) {
+        if isOverride, let index = getIndex(ofTrack: track) {
             tracks[index] = track
         } else {
             tracks.append(track)

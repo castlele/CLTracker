@@ -113,7 +113,13 @@ public final class CLFileManager {
         renameCurrentFile(name, config: configuration, logger: logger)
     }
 
-    public func track(_ name: String, time: Float, date: Date, tag: String?, logger: CLLogger?) {
+    public func track(_ name: String,
+                      time: Float,
+                      date: Date,
+                      isOverride: Bool,
+                      tag: String?,
+                      logger: CLLogger?) {
+
         guard let configuration = configuration else {
             logger?.error(.noFilesInitializedOrSet)
             return
@@ -126,7 +132,7 @@ public final class CLFileManager {
             logger?.error(.invalidTag(tag: tag))
         }
 
-        addNewTrack(newTrack, config: configuration, logger: logger)
+        addNewTrack(newTrack, isOverride: isOverride, config: configuration, logger: logger)
     }
 
     public func create(_ name: String, logger: CLLogger?) {
@@ -166,9 +172,9 @@ public final class CLFileManager {
         write(toPath: configPath, data: json, logger: logger)
     }
 
-    private func addNewTrack(_ track: Track, config: Config, logger: CLLogger?) {
+    private func addNewTrack(_ track: Track, isOverride: Bool, config: Config, logger: CLLogger?) {
         var tracks: Tracks = getFilesData(fromPath: config.currentTrackingFile, logger: logger)
-        tracks.track(track)
+        tracks.track(track, isOverride: isOverride)
 
         let json = JSONConverter.encode(tracks)
         write(toPath: config.currentTrackingFile, data: json, logger: logger)

@@ -38,8 +38,12 @@ public struct CLService {
                     handleListing()
 
                 case .track:
-                    let argument = command.options.first(where: { $0.type == .tag })?.arguments.first
-                    handleTracking(withName: command.arguments[0], time: command.arguments[1], tag: argument)
+                    let tagArgument = command.options.first(where: { $0.type == .tag })?.arguments.first
+                    let isOverrideArgument = command.options.contains(where: { $0.type == .override })
+                    handleTracking(withName: command.arguments[0],
+                                   time: command.arguments[1],
+                                   isOverride: isOverrideArgument,
+                                   tag: tagArgument)
 
                 case .remove:
                     return
@@ -64,7 +68,7 @@ public struct CLService {
             logger.error("invalid usage of \(command)")
 
 
-        } catch let CLParserError.invalidUseOfOption(option, command) { // TODO: fix naming
+        } catch let CLParserError.invalidUseOfOption(option, command) {
             logger.error("invalid usage of \(option) for \(command)")
 
         } catch {
@@ -92,8 +96,13 @@ public struct CLService {
         fileManager.showListOfFiles(logger: logger)
     }
 
-    private func handleTracking(withName name: String, time: String, tag: String?) {
-        fileManager.track(name, time: makeTime(time), date: Date(), tag: tag, logger: logger)
+    private func handleTracking(withName name: String, time: String, isOverride: Bool, tag: String?) {
+        fileManager.track(name, 
+                          time: makeTime(time),
+                          date: Date(),
+                          isOverride: isOverride,
+                          tag: tag,
+                          logger: logger)
     }
 
     private func handleRemoving(withName name: String) {
